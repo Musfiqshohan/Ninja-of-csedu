@@ -1,0 +1,139 @@
+#include <iostream>
+#include <fstream>
+#include <SFML/Graphics.hpp>
+#include<time.h>
+#include<stdio.h>
+#include<string>
+
+
+using namespace std;
+using namespace sf;
+
+RenderWindow window(VideoMode(1200, 600), "The Game!");
+
+
+String sentence;
+Font fontb;
+Text textt(sentence, fontb, 40);
+
+
+struct Player{
+	int score;
+	char name[100];
+};
+
+void high_scores()
+{
+	Player player[100];
+	int score;
+	char name[100];
+	FILE *fp;
+
+	char *input_file = "highscores.txt";
+
+	int i = 0, j;
+	fp = fopen(input_file, "r");
+	while (fscanf(fp, "%d %s", &score, &name) == 2)
+	{
+		player[i].score = score;
+		strcpy(player[i].name, name);
+		i++;
+	}
+	int n = i;
+	for (i = 0; i<n - 1; i++)
+	{
+		for (j = 0; j<n - i - 1; j++)
+		{
+			if (player[j].score>player[j + 1].score)
+			{
+				int temp = player[j].score;
+				player[j].score = player[j + 1].score;
+				player[j + 1].score = temp;
+			}
+		}
+
+	}
+	for (i = n - 1; i >= 0; i--)
+	{
+		printf("%s %d\n", player[i].name, player[i].score);
+		textt.setString(player[i].name);
+		textt.setPosition(400, 200 + i * 100);
+		window.draw(textt);
+	}
+	
+
+	for (i = n-1; i >= 0; i--)
+	{
+		int count1 = player[i].score;
+
+		string str;
+		while (count1 > 0)
+		{
+			int a;
+			a = count1 % 10;
+			count1 = count1 / 10;
+			a = a + 48;
+			char b = a;
+			str = str + b;
+		}
+
+		reverse(str.begin(), str.end());
+		cout << str << endl;
+		textt.setString(str);
+		textt.setPosition(800, 200 + i * 100);
+		window.draw(textt);
+	}
+
+	fclose(fp);
+
+}
+
+void scoreboard_func()
+{
+	Texture bk;
+	Sprite bk2;
+	Clock scoreboard_clock;
+	scoreboard_clock.restart();
+	bk.loadFromFile("scoreboard.png");
+	bk2.setTexture(bk);
+
+	String high_text;
+	Clock high_clock;
+	int count = 19, high_flag = 0;
+	fontb.loadFromFile("naruto.ttf");
+	textt.setStyle(Text::Bold);
+
+
+
+
+	while (window.isOpen())
+	{
+
+		Event e;
+		while (window.pollEvent(e))
+		{
+
+			switch (e.type)
+			{
+			case Event::Closed:
+				window.close();
+				break;
+
+			}
+		}
+
+		window.draw(bk2);
+		
+		high_scores();
+
+
+		//if (Keyboard::isKeyPressed(Keyboard::Escape))
+			//return 0;
+
+		window.draw(textt);
+		window.display();
+		window.clear();
+	}
+
+	
+}

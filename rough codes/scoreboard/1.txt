@@ -1,0 +1,161 @@
+
+#include <iostream>
+#include <fstream>
+#include <SFML/Graphics.hpp>
+#include<time.h>
+#include<stdio.h>
+#include<string>
+
+
+using namespace std;
+using namespace sf;
+
+
+RenderWindow window(VideoMode(1200, 600), "The Game!");
+String sentence;
+Font font;
+Text text(sentence, font, 40);
+char Topname[30][10];
+int Topscore[10];
+
+
+void high_scores(String sentence, int count)
+{
+
+	window.setFramerateLimit(50);
+	ofstream out;
+	ifstream in;
+	pair<int, string>arr[8];
+
+
+	in.open("highscore.txt");
+	for (int i = 0; i < 5; i++)
+	{
+		in >> arr[i].first;
+		in >> arr[i].second;
+	}
+	in.close();
+	arr[5].first = count;
+	arr[5].second = sentence;
+	sort(arr, arr + 6);
+	reverse(arr, arr + 6);
+	out.open("highscore.txt");
+	for (int i = 0; i < 5; i++)
+	{
+		out << arr[i].first << " ";
+		out << arr[i].second << endl;
+	}
+	out.close();
+
+	int score = 0, i = 0;
+	char name[100];
+	char *output_file = "highscore.txt";
+	FILE *fp;
+	fp = fopen(output_file, "r");
+
+	while (i <= 5)
+	{
+		fscanf(fp, "%d %s", &score, &name);
+		strcpy(Topname[i], name);
+		Topscore[i] = score;
+		i++;
+	}
+
+	fclose(fp);
+
+
+	for (i = 0; i < 5; i++)
+	{
+		text.setString(Topname[i]);
+		text.setPosition(400, 200 + i * 100);
+		window.draw(text);
+
+	}
+
+	for (i = 0; i < 5; i++)
+	{
+		int count1 = Topscore[i];
+
+		string str;
+		while (count1 > 0)
+		{
+			int a;
+			a = count1 % 10;
+			count1 = count1 / 10;
+			a = a + 48;
+			char b = a;
+			str = str + b;
+		}
+
+		reverse(str.begin(), str.end());
+		cout << str << endl;
+		text.setString(str);
+		text.setPosition(800, 200 + i * 100);
+		window.draw(text);
+	}
+
+}
+
+int main()
+{
+	Texture bk;
+	Sprite bk2;
+
+	bk.loadFromFile("scoreboard.png");
+	bk2.setTexture(bk);
+
+	String high_text;
+	Clock high_clock;
+	int count = 19, high_flag = 0;
+	font.loadFromFile("naruto.ttf");
+	text.setStyle(Text::Bold);
+
+
+
+
+	while (window.isOpen())
+	{
+
+		Event e;
+		while (window.pollEvent(e))
+		{
+
+			switch (e.type)
+			{
+			case Event::Closed:
+				window.close();
+				break;
+
+
+			case Event::TextEntered:
+				if (e.text.unicode >= 32 && e.text.unicode <= 126)
+					high_text += (char)e.text.unicode;
+				else if (e.text.unicode == 8 && high_text.getSize() > 0)
+					high_text.erase(high_text.getSize() - 1, high_text.getSize());
+
+				text.setString(high_text);
+				break;
+
+			}
+		}
+
+		if (Keyboard::isKeyPressed(Keyboard::Return))
+		{
+			high_clock.restart();
+			high_flag = 1;
+		}
+
+		window.draw(bk2);
+		if (high_flag == 1)
+		{
+			if (high_clock.getElapsedTime().asSeconds()<5)
+				high_scores(high_text, count);
+
+		}
+		window.draw(text);
+		window.display();
+		window.clear();
+	}
+
+	return 0;
+}
